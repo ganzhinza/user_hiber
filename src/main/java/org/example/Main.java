@@ -2,81 +2,102 @@ package org.example;
 
 import org.example.dao.UserDao;
 import org.example.model.User;
+import java.util.Scanner;
+
+import org.example.util.HibernateUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main {
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
     public static void main(String[] args) {
+        int AppType = -1;
+        Scanner scanner = new Scanner(System.in);
+        while (AppType < 0 || AppType > 2){
+            System.out.println("Choose mode:\n1.Demonstration\n2.Console application\n0.Exit");
+            AppType = Integer.parseInt(scanner.nextLine());
+        }
+        switch (AppType){
+            case 1 -> demonstration();
+            case 2 ->{ConsoleApp app = new ConsoleApp();
+                app.start();}
+        }
+        logger.info("Application terminated");
+    }
+
+    public static void demonstration(){
         UserDao userDao = new UserDao();
+        System.out.println("=== CRUD OPERATIONS DEMONSTRATION ===\n");
 
-        System.out.println("=== ДЕМОНСТРАЦИЯ CRUD ОПЕРАЦИЙ ===\n");
-
-        // Test CREATE - создаем нескольких пользователей
-        System.out.println("1. СОЗДАНИЕ ПОЛЬЗОВАТЕЛЕЙ");
+        // Test CREATE - creating several users
+        System.out.println("1. CREATING USERS");
 
         User user1 = new User();
-        user1.setName("Иван Иванов");
+        user1.setName("Ivan Ivanov");
         user1.setEmail("ivan@example.com");
         user1.setAge(25);
         Long user1Id = userDao.saveUser(user1);
-        System.out.println("   Создан пользователь 1 с ID: " + user1Id);
+        System.out.println("   Created user 1 with ID: " + user1Id);
 
         User user2 = new User();
-        user2.setName("Мария Петрова");
+        user2.setName("Maria Petrova");
         user2.setEmail("maria@example.com");
         user2.setAge(30);
         Long user2Id = userDao.saveUser(user2);
-        System.out.println("   Создан пользователь 2 с ID: " + user2Id);
+        System.out.println("   Created user 2 with ID: " + user2Id);
 
         User user3 = new User();
-        user3.setName("Алексей Сидоров");
+        user3.setName("Alexey Sidorov");
         user3.setEmail("alex@example.com");
         user3.setAge(28);
         Long user3Id = userDao.saveUser(user3);
-        System.out.println("   Создан пользователь 3 с ID: " + user3Id);
+        System.out.println("   Created user 3 with ID: " + user3Id);
 
-        // Test READ ALL - показываем всех пользователей
-        System.out.println("\n2. ВСЕ ПОЛЬЗОВАТЕЛИ В БАЗЕ:");
+        // Test READ ALL - showing all users
+        System.out.println("\n2. ALL USERS IN DATABASE:");
         userDao.getAllUsers().forEach(System.out::println);
 
-        // Test READ - читаем одного пользователя
-        System.out.println("\n3. ПОИСК ПОЛЬЗОВАТЕЛЯ ПО ID:");
+        // Test READ - reading one user
+        System.out.println("\n3. SEARCH USER BY ID:");
         User foundUser = userDao.getUserById(user2Id).orElse(null);
-        System.out.println("   Найден пользователь: " + foundUser);
+        System.out.println("   Found user: " + foundUser);
 
-        // Test UPDATE - обновляем пользователя
-        System.out.println("\n4. ОБНОВЛЕНИЕ ПОЛЬЗОВАТЕЛЯ");
+        // Test UPDATE - updating user
+        System.out.println("\n4. UPDATING USER");
         if (foundUser != null) {
             foundUser.setEmail("maria.new@example.com");
             foundUser.setAge(31);
             userDao.updateUser(foundUser);
-            System.out.println("   Пользователь обновлен: " + foundUser);
+            System.out.println("   User updated: " + foundUser);
         }
 
-        // Test READ ALL - снова показываем всех после обновления
-        System.out.println("\n5. ВСЕ ПОЛЬЗОВАТЕЛИ ПОСЛЕ ОБНОВЛЕНИЯ:");
+        // Test READ ALL - showing all after update
+        System.out.println("\n5. ALL USERS AFTER UPDATE:");
         userDao.getAllUsers().forEach(System.out::println);
 
-        // Test DELETE - удаляем одного пользователя
-        System.out.println("\n6. УДАЛЕНИЕ ПОЛЬЗОВАТЕЛЯ");
-        System.out.println("   Удаляем пользователя с ID: " + user2Id);
+        // Test DELETE - deleting one user
+        System.out.println("\n6. DELETING USER");
+        System.out.println("   Deleting user with ID: " + user2Id);
         userDao.deleteUser(user2Id);
-        System.out.println("   Пользователь удален");
+        System.out.println("   User deleted");
 
-        // Test READ ALL - показываем оставшихся пользователей
-        System.out.println("\n7. ОСТАВШИЕСЯ ПОЛЬЗОВАТЕЛИ:");
+        // Test READ ALL - showing remaining users
+        System.out.println("\n7. REMAINING USERS:");
         userDao.getAllUsers().forEach(System.out::println);
 
-        // Test DELETE - удаляем всех пользователей
-        System.out.println("\n8. УДАЛЕНИЕ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ");
+        // Test DELETE - deleting all users
+        System.out.println("\n8. DELETING ALL USERS");
         userDao.getAllUsers().forEach(u -> {
-            System.out.println("   Удаляем пользователя с ID: " + u.getId());
+            System.out.println("   Deleting user with ID: " + u.getId());
             userDao.deleteUser(u.getId());
         });
-        System.out.println("   Все пользователи удалены");
+        System.out.println("   All users deleted");
 
         // Final check
-        System.out.println("\n9. ФИНАЛЬНАЯ ПРОВЕРКА");
-        System.out.println("   Пользователей в базе: " + userDao.getAllUsers().size());
+        System.out.println("\n9. FINAL CHECK");
+        System.out.println("   Users in database: " + userDao.getAllUsers().size());
 
-        System.out.println("\n=== ДЕМОНСТРАЦИЯ ЗАВЕРШЕНА ===");
+        HibernateUtil.shutdown();
+        System.out.println("\n=== DEMONSTRATION COMPLETED ===");
     }
 }
