@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.dao.UserDao;
+import org.example.handler.Handler;
 import org.example.model.User;
 import java.util.Scanner;
 
@@ -19,10 +20,35 @@ public class Main {
         }
         switch (AppType){
             case 1 -> demonstration();
-            case 2 ->{ConsoleApp app = new ConsoleApp();
-                app.start();}
+            case 2 -> start();
         }
         logger.info("Application terminated");
+    }
+
+    public static void start(){
+        Handler handler;
+        handler = new Handler(new UserDao());
+        logger.info("Starting console application");
+        while(true){
+            handler.printMenu();
+            int op = handler.getIntInput("Choose action: ");
+
+
+            switch (op){
+                case 1 -> handler.createUser();
+                case 2 -> handler.showAllUsers();
+                case 3 -> handler.findUserById();
+                case 4 -> handler.updateUser();
+                case 5 -> handler.deleteUser();
+                case 0 -> {
+                    System.out.println("Exit...");
+                    HibernateUtil.shutdown();
+                    logger.info("Application stopped");
+                    return;
+                }
+                default -> System.out.println("wrong choice");
+            }
+        }
     }
 
     public static void demonstration(){

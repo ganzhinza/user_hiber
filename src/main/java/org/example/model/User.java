@@ -2,7 +2,6 @@ package org.example.model;
 
 
 import jakarta.persistence.*;
-import jakarta.transaction.UserTransaction;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -76,12 +75,13 @@ public class User {
     public String toString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return String.format(
-                "User #%d\n" +
-                        "   ├─ Name: %s\n" +
-                        "   ├─ Email: %s\n" +
-                        "   ├─ Age: %s\n" +
-                        "   └─ Created: %s\n" +
-                        "   └─ Type: %s",
+                """
+                        User #%d
+                           ├─ Name: %s
+                           ├─ Email: %s
+                           ├─ Age: %s
+                           └─ Created: %s
+                           └─ Type: %s""",
                 id,
                 name,
                 email,
@@ -89,5 +89,9 @@ public class User {
                 createdAt.format(formatter),
                 this.getClass().getSimpleName()
         );
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

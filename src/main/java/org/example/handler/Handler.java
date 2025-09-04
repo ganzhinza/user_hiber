@@ -1,45 +1,26 @@
-package org.example;
+
+package org.example.handler;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.dao.UserDao;
 import org.example.model.User;
-import org.example.util.HibernateUtil;
+import org.example.service.Service;
 
 import java.util.List;
 import java.util.Scanner;
 
 
-public class ConsoleApp {
-    private static final Logger logger = LogManager.getLogger(UserDao.class);
-    private final UserDao userDao = new UserDao();
+public class Handler {
+    private static final Logger logger = LogManager.getLogger(org.example.handler.Handler.class);
     private final Scanner scanner = new Scanner(System.in);
+    private final Service service;
 
-    public void start(){
-        logger.info("Starting console application");
-        while(true){
-            printMenu();
-            int op = getIntInput("Choose action: ");
-
-
-            switch (op){
-                case 1 -> createUser();
-                case 2 -> showAllUsers();
-                case 3 -> findUserById();
-                case 4 -> updateUser();
-                case 5 -> deleteUser();
-                case 0 -> {
-                    System.out.println("Exit...");
-                    HibernateUtil.shutdown();
-                    logger.info("Application stopped");
-                    return;
-                }
-                default -> System.out.println("wrong choice");
-            }
-        }
+    public Handler(UserDao userDao){
+        service = new Service(userDao);
     }
 
-    private int getIntInput(String str){
+    public int getIntInput(String str){
         while (true){
             try{
                 System.out.println(str);
@@ -51,7 +32,7 @@ public class ConsoleApp {
         }
     }
 
-    private void printMenu() {
+    public void printMenu() {
         System.out.println("\n=== MENU ===");
         System.out.println("1. Create user");
         System.out.println("2. Show all users");
@@ -62,7 +43,7 @@ public class ConsoleApp {
     }
 
 
-    private void createUser(){
+    public void createUser(){
         logger.debug("Creating new user");
         System.out.println("User creation: ");
 
@@ -77,32 +58,30 @@ public class ConsoleApp {
         System.out.println("Enter email:");
         user.setEmail(scanner.nextLine());
 
-        Long id = userDao.saveUser(user);
-        if (id != null) {
-            System.out.println("User created with ID: " + id);
-            logger.info("User created with ID: {}", id);
-        } else {
+        User createdUser = service.createUser(user);
+        if (createdUser != null) {
+            System.out.println("User created with ID: " + createdUser.getId());
+        }{
             System.out.println("Failed to create user");
-            logger.error("Failed to create user");
         }
     }
 
-    private void showAllUsers(){
+    public void showAllUsers(){
         logger.debug("Showing all users");
         System.out.println("All users:");
 
-        List<User> users = userDao.getAllUsers();
+        List<User> users = service.showAllUsers();
         System.out.println("Users found: " + users.size());
 
         users.forEach(System.out::println);
     }
 
-    private void findUserById(){
+    public void findUserById(){
         System.out.println("User finding");
         Long id = (long) getIntInput("Input user ID: ");
         logger.debug("Searching for user with ID: {}", id);
 
-        var user = userDao.getUserById(id);
+        var user = service.findUserById(id);
         if(user.isPresent()){
             User u = user.get();
             System.out.println("User with ID: "+u.getId());
@@ -114,12 +93,12 @@ public class ConsoleApp {
         }
     }
 
-    private void updateUser(){
+    public void updateUser(){
         System.out.println("User updating");
         Long id = (long) getIntInput("Input user ID: ");
         logger.debug("Updating user with ID: {}", id);
 
-        var userOpt = userDao.getUserById(id);
+        var userOpt = service.findUserById(id);
         if(userOpt.isEmpty()){
             System.out.println("User with ID: "+ id +" not found");
             logger.warn("User witn ID: {} not found for update", id);
@@ -142,19 +121,19 @@ public class ConsoleApp {
         int age = getIntInput("Age: ");
         if (age > 0) user.setAge(age);
 
-        userDao.updateUser(user);
+        service.updateUser(user);
         System.out.println("User updated");
         logger.info("User updated: {}", user);
     }
 
-    private void deleteUser(){
+    public void deleteUser(){
         System.out.println("User deleting");
         Long id = (long) getIntInput("User ID for deleting: ");
         logger.debug("Deleting user with ID: {}", id);
 
-        var userOpt = userDao.getUserById(id);
+        var userOpt = service.findUserById(id);
         if (userOpt.isPresent()) {
-            userDao.deleteUser(id);
+            service.deleteUser(id);
             System.out.println("User deleted");
             logger.info("User with ID {} deleted", id);
         } else {
